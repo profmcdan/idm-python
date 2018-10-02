@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Error!{% endblock %}
+
+{% block content %}    
+    <section id="register">
+      <div class="container-fluid">
+        <div class="col-md-8" style="min-height: 500px;">
+        {% if user.is_authenticated %} Hello, {{ user.username }}!
+            <p>
+                We can't verify your face at the moment. You may want to <a href="{% url 'logout' %}">logout</a> and try again.
+            </p>
+        {% endif %}
+        </div>
+      </div>
+    </section>
+{% endblock %}

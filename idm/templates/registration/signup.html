@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load bootstrap %}
+
+{% block main_content %}
+<div class="container">
+  <!--Section: Contact-->
+  <section id="contact">
+
+    <!-- Heading -->
+    <h2 class="mb-5 font-weight-bold text-center">Register a new person</h2>
+
+    <!--Grid row-->
+    <div class="row">
+
+      <!--Grid column-->
+      <div class="col-lg-5 col-md-12">
+        <!--Grid row-->
+        <div class="row text-center">
+          <p class="lead ml-5">Identity Management Image</p>
+        </div>
+        <!--Grid row-->
+        <!--Google map-->
+        <div id="map-container" class="z-depth-1-half map-container mb-5" style="height: 400px"></div>
+      </div>
+      <!--Grid column-->
+
+      <!--Grid column-->
+      <div class="col-lg-7 col-md-12">
+        <form method="post" class="p-5">
+          {% csrf_token %}
+          {{ form|bootstrap }}
+          <div class="text-center mt-4">
+            <button class="btn btn-primary">Register <i class="fa fa-paper-plane-o ml-1"></i></button>
+          </div>
+        </form>
+      </div>
+      <!--Grid column-->
+
+    </div>
+    <!--Grid row-->
+
+  </section>
+</div>
+
+{% endblock %}

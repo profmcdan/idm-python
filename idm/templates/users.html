@@ -1,0 +1,31 @@
+{% extends 'b.html' %}
+{% load static %}
+
+{% block content %}
+{% for usr in users %}
+<div class="row" style="margin-top: 12px; background-color: #f7f1f1">
+  <div class="col-2" style="padding-top: 10px;">
+    <img src="{% static 'img/img1.png' %}" height="170px" width="170px" alt="user" srcset="">
+  </div>
+  <div class="col-9" style="padding-top: 10px;">
+    <div class="row">
+      <div class="col-3">
+        <h6><b>Name</b></h6>
+        <p>{{ usr.name }}</p>
+      </div>
+      <div class="col-3">
+        <h6><b>Email</b></h6>
+        <p>{{ usr.email }}</p>
+        <hr>
+        <h6>Phone Number</h6>
+        <p>09087667766</p>
+      </div>
+      <div class="col-5">
+        <h6><b>Bio</b></h6>
+        <p style="text-align: justify;"> {{ usr.bio }} </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock content %}

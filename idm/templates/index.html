@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block landing %}
+<!--Mask-->
+<div id="intro" class="view mt-4">
+    <!--Mask-->
+    <div id="intro" class="view">
+
+        <div class="mask rgba-black-strong">
+
+            <div class="container-fluid d-flex align-items-center justify-content-center h-100">
+
+                <div class="row d-flex justify-content-center text-center">
+
+                    <div class="col-md-10">
+
+                        <!-- Heading -->
+                        <h2 class="display-4 font-weight-bold white-text pt-5 mb-2">Identity Management</h2>
+
+                        <!-- Divider -->
+                        <hr class="hr-light">
+
+                        <!-- Description -->
+                        <h4 class="white-text my-4">IdM covers issues such as how users gain an identity, the
+                            protection of that identity and the technologies supporting that protection.
+                        </h4>
+                        <a href="{% url 'signup' %}" class="btn btn-outline-white">Register<i class="fa fa-book ml-2"></i></a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!--/.Mask-->
+
+</div>
+<!--/.Mask-->
+{% endblock landing %}

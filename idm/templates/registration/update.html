@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load bootstrap %}
+
+{% block content %}
+    <section id="register">
+      <div class="container-fluid">
+        <div class="col-md-8" style="min-height: 500px;">
+          <h2>Update Data</h2>
+          <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ form|bootstrap }}
+
+              <button class="btn btn-custom btn-xl js-scroll-trigger" type="submit">Update</button>
+          </form>
+        </div>
+      </div>
+    </section>
+{% endblock %}

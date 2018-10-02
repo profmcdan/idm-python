@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %} Hello, {{ user.username }}!
+      <p>
+          Welcome!
+      </p>
+      <p>You are not verified yet. <a href="{% url 'verify-face' user.pk %}">Verify</a> </p>
+  {% else %}
+    <p>You are not authorized yet.</p>
+  {% endif %}
+{% endblock %}
