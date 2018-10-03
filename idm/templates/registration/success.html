@@ -1,14 +1,43 @@
 {% extends 'base.html' %}
+{% load bootstrap %}
 
-{% block title %}Success!{% endblock %}
+{% block main_content %}
+<div class="container">
+  <!--Section: Contact-->
+  <section id="contact">
 
-{% block content %}    
-    <section id="register">
-      <div class="container-fluid">
-        <div class="col-md-8" style="min-height: 500px;">
-          <h3>Congratulations</h3>
-          <p>You are logged in and fully verified.</p>
+    <!-- Heading -->
+    <h2 class="mb-5 font-weight-bold text-center">Success</h2>
+
+    <!--Grid row-->
+    <div class="row">
+
+      <!--Grid column-->
+      <div class="col-lg-5 col-md-12">
+        <!--Grid row-->
+        <div class="row text-center">
+          <p class="lead ml-5">Identity Management Image</p>
+        </div>
+        <!--Grid row-->
+        <!--Google map-->
+        <div id="map-container" class="z-depth-1-half map-container mb-5" style="height: 400px"></div>
+      </div>
+      <!--Grid column-->
+
+      <!--Grid column-->
+      <div class="col-lg-7 col-md-12">
+        <div class="p-5">
+          <p class="lead">
+            You have logged in successfully.
+          </p>
         </div>
       </div>
-    </section>
+      <!--Grid column-->
+
+    </div>
+    <!--Grid row-->
+
+  </section>
+</div>
+
 {% endblock %}

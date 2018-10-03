@@ -2,16 +2,47 @@
 
 {% block title %}Error!{% endblock %}
 
-{% block content %}    
-    <section id="register">
-      <div class="container-fluid">
-        <div class="col-md-8" style="min-height: 500px;">
-        {% if user.is_authenticated %} Hello, {{ user.username }}!
-            <p>
-                We can't verify your face at the moment. You may want to <a href="{% url 'logout' %}">logout</a> and try again.
-            </p>
-        {% endif %}
+
+{% block main_content %}
+<div class="container">
+    <!--Section: Contact-->
+    <section id="contact">
+
+        <!-- Heading -->
+        <h2 class="mb-5 font-weight-bold text-center">Error</h2>
+
+        <!--Grid row-->
+        <div class="row">
+
+            <!--Grid column-->
+            <div class="col-lg-5 col-md-12">
+                <!--Grid row-->
+                <div class="row text-center">
+                    <p class="lead ml-5">Identity Management Image</p>
+                </div>
+                <!--Grid row-->
+                <!--Google map-->
+                <div id="map-container" class="z-depth-1-half map-container mb-5" style="height: 400px"></div>
+            </div>
+            <!--Grid column-->
+
+            <!--Grid column-->
+            <div class="col-lg-7 col-md-12">
+                <div class="p-5">
+                    {% if user.is_authenticated %} Hello, {{ user.username }}!
+                    <p>
+                        We can't verify your face at the moment. You may want to <a href="{% url 'logout' %}">logout</a>
+                        and try again.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            <!--Grid column-->
+
         </div>
-      </div>
+        <!--Grid row-->
+
     </section>
+</div>
+
 {% endblock %}

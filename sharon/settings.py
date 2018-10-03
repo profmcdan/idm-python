@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'idm',
     'bootstrapform',
 ]
-AUTH_USER_MODEL = 'idm.CustomUser'
+# AUTH_USER_MODEL = 'idm.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (

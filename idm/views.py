@@ -12,7 +12,7 @@ import os
 from PIL import Image
 from io import BytesIO
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .models import CustomUser, Product, Face, UserLogHistory
+from .models import Product, Face, UserLogHistory, Profile
 from .forms import FaceForm
 from .serializer import ProductSerializer, UserSerializer
 
@@ -23,6 +23,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.files.base import ContentFile
 from skimage import io
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 
 # define the path to the face detector
@@ -46,7 +47,7 @@ def url_to_image(url):
 @login_required
 def view_users(request):
     template_name = 'users.html'
-    data = CustomUser.objects.all()
+    data = Profile.objects.all()
     return render(request, template_name, {'users': data})
 
 
@@ -66,13 +67,15 @@ def my_login_view(request):
         if username and password:
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                userLog = UserLogHistory(user=user, attempt='success')
+                userLog = UserLogHistory(user=username, attempt='success')
                 userLog.save()
                 login(request, user)
+                profile = Profile.objects.get(user=user)
+                print(profile)
                 # Redirect to a success page.
-                redirect(reverse_lazy('verify-face', kwargs={'pk': user.pk}))
+                return redirect(profile.get_verify_url())
             else:
-                userLog = UserLogHistory(user=user, attempt='success')
+                userLog = UserLogHistory(user=username, attempt='failed')
                 userLog.save()
     return render(request, template_name, {'form': form})
 
@@ -84,12 +87,12 @@ def home(request):
 
 
 class UsersList(ListCreateAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = Profile.objects.all()
     serializer_class = UserSerializer
 
 
 class UsersDetail(RetrieveUpdateDestroyAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
@@ -105,28 +108,34 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
 
 class SignUp(generic.CreateView):
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('update-user')
     template_name = 'registration/signup.html'
 
     def form_valid(self, form):
-        user = form.save()
-        return redirect('update-user', kwargs={'pk': user.pk})
+        usr = form.save()
+        key = usr.pk
+        usr = get_object_or_404(User, pk=key)
+        profile = Profile(user=usr)
+        profile.save()
+        print(usr)
+        return redirect(profile.get_update_url())
 
 
 class UpdateUserFace(generic.UpdateView):
-    model = CustomUser
-    fields = ['face', ]
+    model = Profile
+    fields = ['name', 'residence', 'country',
+              'education', 'occupation', 'bio', 'profile_face', ]
     success_url = reverse_lazy('root')
     template_name = 'registration/update.html'
 
     def form_valid(self, form):
         usr = form.save()
         key = usr.pk
-        usr = get_object_or_404(CustomUser, pk=key)
+        usr = get_object_or_404(Profile, pk=key)
         face = Face(userr=usr)
         face.save()
-        face_copy = ContentFile(usr.face.read())
-        face_copy_name = usr.face.name.split("/")[-1]
+        face_copy = ContentFile(usr.profile_face.read())
+        face_copy_name = usr.profile_face.name.split("/")[-1]
         face.pic.save(face_copy_name, face_copy)
         face.save()
         usr.face = None
@@ -137,15 +146,15 @@ class UpdateUserFace(generic.UpdateView):
 
 
 class VerifyUserFace(generic.UpdateView):
-    model = CustomUser
+    model = Profile
     fields = ['face', ]
     success_url = reverse_lazy('root')
-    template_name = 'registration/update.html'
+    template_name = 'registration/verify.html'
 
     def form_valid(self, form):
         usr = form.save()
         key = usr.pk
-        usr = get_object_or_404(CustomUser, pk=key)
+        usr = get_object_or_404(Profile, pk=key)
         usr_face = usr.face
         face_url = server + usr_face.url
         face_image = url_to_image(face_url)
@@ -155,29 +164,32 @@ class VerifyUserFace(generic.UpdateView):
             usr.is_verified = True
             usr.face = None
             usr.save()
-            return redirect(reverse_lazy('success', kwargs={'pk': usr.pk}))
+            return redirect(usr.get_login_success_url())
         else:
             usr.is_verified = False
             usr.face = None
             usr.save()
-            return redirect(reverse_lazy('error', kwargs={'pk': usr.pk}))
+            return redirect(usr.get_login_error_url())
 
 
 def error_view(request, pk):
-    usr = get_object_or_404(CustomUser, pk=pk)
+    usr = get_object_or_404(Profile, pk=pk)
     template_name = 'registration/error.html'
     data = {'usr': usr}
     return render(request, template_name, data)
 
 
 def success_view(request, pk):
-    usr = get_object_or_404(CustomUser, pk=pk)
+    usr = get_object_or_404(Profile, pk=pk)
     template_name = 'registration/success.html'
     data = {'usr': usr}
     return render(request, template_name, data)
 
 
+@login_required
 def partial_login(request):
     template_name = 'registration/partial.html'
-    data = {}
+    loggedUser = request.user
+    profile = Profile.objects.get(user=loggedUser)
+    data = {'profile': profile}
     return render(request, template_name, data)

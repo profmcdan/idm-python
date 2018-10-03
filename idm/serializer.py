@@ -1,11 +1,12 @@
 from rest_framework import serializers
-from .models import Product, CustomUser
+from .models import Product, Profile
+
 
 class UserSerializer(serializers.ModelSerializer):
     # product = serializers.PrimaryKeyRelatedField(many=True, queryset=Product.objects.all())
     class Meta:
-        model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'email', 'groups',]
+        model = Profile
+        fields = '__all__'
 
 
 class ProductSerializer(serializers.ModelSerializer):

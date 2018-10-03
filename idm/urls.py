@@ -25,6 +25,6 @@ urlpatterns = [
     path('new/', face_rec.new),
     path('users/', face_rec.users),
 
-    path('login/', login, name='login'),
+    path('login/', views.my_login_view, name='login'),
     path('logout/', logout, name='logout'),
 ]

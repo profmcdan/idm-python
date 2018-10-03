@@ -11,19 +11,19 @@ import cv2
 import os
 import random
 import uuid
-from .models import CustomUser as User
+from .models import Profile as User
 
 
 # define the path to the face detector and smile detector
 FACE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_frontalface_default.xml".format(
-	base_path=os.path.abspath(os.path.dirname(__file__)))
+    base_path=os.path.abspath(os.path.dirname(__file__)))
 
 SMILE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_smile.xml".format(
-	base_path=os.path.abspath(os.path.dirname(__file__)))
+    base_path=os.path.abspath(os.path.dirname(__file__)))
 
 # path to trained faces and labels
 TRAINED_FACES_PATH = "{base_path}/faces".format(
-	base_path=os.path.abspath(os.path.dirname(__file__)))
+    base_path=os.path.abspath(os.path.dirname(__file__)))
 
 # maximum distance between face and match
 THRESHOLD = 75
@@ -32,6 +32,7 @@ THRESHOLD = 75
 detector = cv2.CascadeClassifier(FACE_DETECTOR_PATH)
 smiledetector = cv2.CascadeClassifier(SMILE_DETECTOR_PATH)
 
+
 def get_images_and_labels(path):
     # images will contains face images
     images = []
@@ -39,22 +40,23 @@ def get_images_and_labels(path):
     labels = []
     user_paths = [f for f in os.listdir(path) if not f.endswith('.DS_Store')]
     for user_path in user_paths:
-	    # Append all the absolute image paths in a list image_paths
-	    image_paths = [os.path.join(os.path.join(path, user_path), f) for f in os.listdir(os.path.join(path, user_path)) if not f.endswith('.DS_Store')]
-	    for image_path in image_paths:
-	        # Read the image and convert to grayscale
-	        image_pil = Image.open(image_path).convert('L')
-	        # Convert the image format into numpy array
-	        image = np.array(image_pil, 'uint8')
-	        # Detect the face in the image
-	        faces = detector.detectMultiScale(image)
-	        # If face is detected, append the face to images and the label to labels
-	        for (x, y, w, h) in faces:
-	            images.append(image[y: y + h, x: x + w])
-	            labels.append(int(user_path))
-	            #cv2.imshow("Adding faces to traning set...", image[y: y + h, x: x + w])
-	            #cv2.waitKey(50)
-	    # return the images list and labels list
+        # Append all the absolute image paths in a list image_paths
+        image_paths = [os.path.join(os.path.join(path, user_path), f) for f in os.listdir(
+            os.path.join(path, user_path)) if not f.endswith('.DS_Store')]
+        for image_path in image_paths:
+            # Read the image and convert to grayscale
+            image_pil = Image.open(image_path).convert('L')
+            # Convert the image format into numpy array
+            image = np.array(image_pil, 'uint8')
+            # Detect the face in the image
+            faces = detector.detectMultiScale(image)
+            # If face is detected, append the face to images and the label to labels
+            for (x, y, w, h) in faces:
+                images.append(image[y: y + h, x: x + w])
+                labels.append(int(user_path))
+                #cv2.imshow("Adding faces to traning set...", image[y: y + h, x: x + w])
+                # cv2.waitKey(50)
+        # return the images list and labels list
     return images, labels
 
 
@@ -62,111 +64,123 @@ recognizer = cv2.face.LBPHFaceRecognizer_create()
 images, labels = get_images_and_labels(TRAINED_FACES_PATH)
 recognizer.train(images, np.array(labels))
 
+
 @csrf_exempt
 def recognize(request):
-	# initialize the data dictionary to be returned by the request
-	data = {}
-	# check to see if this is a get request
-	if request.method == "GET":
-		# check to see if an image was uploaded
-		if request.GET.get("imageBase64", None) is not None:
-			# grab the uploaded image
-			image = _grab_image(base64_string=request.GET.get("imageBase64", None))
+    # initialize the data dictionary to be returned by the request
+    data = {}
+    # check to see if this is a get request
+    if request.method == "GET":
+            # check to see if an image was uploaded
+        if request.GET.get("imageBase64", None) is not None:
+            # grab the uploaded image
+            image = _grab_image(
+                base64_string=request.GET.get("imageBase64", None))
 
-		# otherwise, assume that a URL was passed in
-		else:
-			# grab the URL from the request
-			url = request.GET.get("url", None)
+        # otherwise, assume that a URL was passed in
+        else:
+            # grab the URL from the request
+            url = request.GET.get("url", None)
 
-			# if the URL is None, then return an error
-			if url is None:
-				data["error"] = "No URL provided."
-				return JsonResponse(data)
+            # if the URL is None, then return an error
+            if url is None:
+                data["error"] = "No URL provided."
+                return JsonResponse(data)
 
-			# load the image and convert
-			image = _grab_image(url=url)
+            # load the image and convert
+            image = _grab_image(url=url)
 
-		# convert the image to grayscale, load the face cascade detector,
-		# and detect faces in the image
-		image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-		rects = detector.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5,
-			minSize=(30, 30), flags=0)
+        # convert the image to grayscale, load the face cascade detector,
+        # and detect faces in the image
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        rects = detector.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5,
+                                          minSize=(30, 30), flags=0)
 
-		# construct a list of bounding boxes from the detection
-		rects = [(int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects]
-		if len(rects) == 0:
-			data.update({"detected": False})
-		else :
-			x, y, w, h = rects[0]
-			recognizer.setThreshold(THRESHOLD)
-			identity, confidence = recognizer.predict(
-				image[y:h, x:w]
-				)
-			smile = smiledetector.detectMultiScale(
-			image[y:h, x:w],
-			scaleFactor= 1.7,
-			minNeighbors=22,
-			minSize=(25, 25),
-			flags=0)
-			smiling = False if len(smile) == 0 else True
-			try:
-			   user = User.objects.get(id=identity)
-			   user = {
-			   	"first_name" : user.first_name,
-			   	"last_name" : user.last_name,
-			   	"username" : user.username,
-			   	"email" : user.email,
-			   	"id" : user.pk,
-			   }
-			except  User.DoesNotExist:
-			   user = ""
+        # construct a list of bounding boxes from the detection
+        rects = [(int(x), int(y), int(x + w), int(y + h))
+                 for (x, y, w, h) in rects]
+        if len(rects) == 0:
+            data.update({"detected": False})
+        else:
+            x, y, w, h = rects[0]
+            recognizer.setThreshold(THRESHOLD)
+            identity, confidence = recognizer.predict(
+                image[y:h, x:w]
+            )
+            smile = smiledetector.detectMultiScale(
+                image[y:h, x:w],
+                scaleFactor=1.7,
+                minNeighbors=22,
+                minSize=(25, 25),
+                flags=0)
+            smiling = False if len(smile) == 0 else True
+            try:
+                user = User.objects.get(id=identity)
+                user = {
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "username": user.username,
+                    "email": user.email,
+                    "id": user.pk,
+                }
+            except User.DoesNotExist:
+                user = ""
 
-			# update the data dictionary with the faces detected
-			data.update({"detected": True, "identity": identity, "user": user, "box": rects, "smiling": smiling})
+            # update the data dictionary with the faces detected
+            data.update({"detected": True, "identity": identity,
+                         "user": user, "box": rects, "smiling": smiling})
 
-	# return a JSON response
-	return JsonResponse(data)
+    # return a JSON response
+    return JsonResponse(data)
+
 
 @csrf_exempt
 def train(request):
-	# check to see if this is a GET request
-	if request.method == "GET":
-		# check to see if an image was uploaded
-		if request.GET.get("imageBase64", None) is not None and request.GET.get("user", None) is not None :
-			# grab the uploaded image
-			image = _grab_image(base64_string=request.GET.get("imageBase64", None))
-			image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-			rects = detector.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5,
-				minSize=(30, 30), flags=0)
+    # check to see if this is a GET request
+    if request.method == "GET":
+        # check to see if an image was uploaded
+        if request.GET.get("imageBase64", None) is not None and request.GET.get("user", None) is not None:
+            # grab the uploaded image
+            image = _grab_image(
+                base64_string=request.GET.get("imageBase64", None))
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            rects = detector.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5,
+                                              minSize=(30, 30), flags=0)
 
-			# construct a list of bounding boxes from the detection
-			rects = [(int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects]
-			if len(rects) == 0:
-				return JsonResponse({"error" : "No faces detected"})
-			else :
-				x, y, w, h = rects[0]
-				cv2.imwrite( TRAINED_FACES_PATH + "/" +  str(request.GET.get("user", None)) + "/" + str(uuid.uuid4()) + ".jpg", image[y:h, x:w] );
-	return JsonResponse({"success" : True})
+            # construct a list of bounding boxes from the detection
+            rects = [(int(x), int(y), int(x + w), int(y + h))
+                     for (x, y, w, h) in rects]
+            if len(rects) == 0:
+                return JsonResponse({"error": "No faces detected"})
+            else:
+                x, y, w, h = rects[0]
+                cv2.imwrite(TRAINED_FACES_PATH + "/" + str(request.GET.get("user",
+                                                                           None)) + "/" + str(uuid.uuid4()) + ".jpg", image[y:h, x:w])
+    return JsonResponse({"success": True})
+
 
 @csrf_exempt
 def new(request):
-	if request.method == "GET":
-		if request.GET.get("username", None) is not None and request.GET.get("email", None) is not None:
-			user = User.objects.create_user(request.GET.get("username", None), request.GET.get("email", None), '')
-			user.first_name = request.GET.get("first_name", None)
-			user.last_name = request.GET.get("last_name", None)
-			user.save()
-			training_folder = os.path.join(TRAINED_FACES_PATH, str(user.pk))
-			if not os.path.exists(training_folder):
-				os.makedirs(training_folder)
-	return JsonResponse({"sucess": True})
+    if request.method == "GET":
+        if request.GET.get("username", None) is not None and request.GET.get("email", None) is not None:
+            user = User.objects.create_user(request.GET.get(
+                "username", None), request.GET.get("email", None), '')
+            user.first_name = request.GET.get("first_name", None)
+            user.last_name = request.GET.get("last_name", None)
+            user.save()
+            training_folder = os.path.join(TRAINED_FACES_PATH, str(user.pk))
+            if not os.path.exists(training_folder):
+                os.makedirs(training_folder)
+    return JsonResponse({"sucess": True})
 
 
 @csrf_exempt
 def users(request):
-	users = [{"first_name" : user.first_name, "last_name": user.last_name, "id" : user.pk} for user in User.objects.all()]
+    users = [{"first_name": user.first_name, "last_name": user.last_name,
+              "id": user.pk} for user in User.objects.all()]
 
-	return JsonResponse({"users" : users})
+    return JsonResponse({"users": users})
+
 
 def _grab_image(path=None, base64_string=None, url=None):
     # if the path is not None, then load the image from disk

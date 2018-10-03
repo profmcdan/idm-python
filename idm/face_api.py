@@ -7,7 +7,7 @@ from io import StringIO
 import numpy as np
 import urllib.request
 import uuid, random, cv2, os, json, time
-from .models import CustomUser as User
+from .models import Profile as User
 from .models import Product, Face
 import requests
 from io import BytesIO
