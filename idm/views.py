@@ -66,9 +66,11 @@ def my_login_view(request):
         password = request.POST['password']
         if username and password:
             user = authenticate(request, username=username, password=password)
+            print('I got here')
             if user is not None:
                 userLog = UserLogHistory(user=username, attempt='success')
                 userLog.save()
+                print(userLog)
                 login(request, user)
                 profile = Profile.objects.get(user=user)
                 print(profile)
@@ -164,11 +166,18 @@ class VerifyUserFace(generic.UpdateView):
             usr.is_verified = True
             usr.face = None
             usr.save()
+            userLog = UserLogHistory(
+                user=self.request.user.username, attempt='success')
+            userLog.save()
+            print(userLog)
             return redirect(usr.get_login_success_url())
         else:
             usr.is_verified = False
             usr.face = None
             usr.save()
+            userLog = UserLogHistory(
+                user=self.request.user.username, attempt='failed')
+            userLog.save()
             return redirect(usr.get_login_error_url())
 
 
@@ -193,3 +202,10 @@ def partial_login(request):
     profile = Profile.objects.get(user=loggedUser)
     data = {'profile': profile}
     return render(request, template_name, data)
+
+
+@login_required
+def view_logs(request):
+    template_name = 'logs.html'
+    logs = UserLogHistory.objects.all()
+    return render(request, template_name, {'userLogs': logs})

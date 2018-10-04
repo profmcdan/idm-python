@@ -19,6 +19,7 @@ urlpatterns = [
          views.ProductDetail.as_view(), name='user-detail'),
     path('users/all/', views.view_users, name='all-users'),
     path('products/', views.view_product, name='products'),
+    path('user-logs/', views.view_logs, name='logs'),
 
     path('recognize/', face_rec.recognize),
     path('train/', face_rec.train),
