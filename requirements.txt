@@ -18,7 +18,7 @@ Markdown==2.6.11
 matplotlib==2.2.2
 networkx==2.1
 numpy==1.15.0
-opencv-contrib-python==3.4.2.17
+opencv-contrib-python==4.2.0.32
 Pillow==5.2.0
 PyJWT==1.6.4
 pyparsing==2.2.0
